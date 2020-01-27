@@ -20,11 +20,20 @@ from gevent.pywsgi import WSGIServer
 app = Flask(__name__)
 
 # Model saved with Keras model.save()
-MODEL_PATH = 'car_model.h5'
+MODEL_PATH = 'car_models.h5'
 
-from keras.applications.resnet50 import ResNet50
-model = ResNet50(weights='imagenet')
-print('Model loaded. Check http://127.0.0.1:5000/ or http://localhost:5000/')
+# Load your trained model
+model = load_model(MODEL_PATH)
+model._make_predict_function()          # Necessary
+# print('Model loaded. Start serving...')
+
+# You can also use pretrained model from Keras
+# Check https://keras.io/applications/
+#from keras.applications.resnet50 import ResNet50
+#model = ResNet50(weights='imagenet')
+#model.save('')
+print('Model loaded. Check http://127.0.0.1:5000/')
+
 
 
 def model_predict(img_path, model):
