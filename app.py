@@ -16,45 +16,34 @@ from flask import Flask, redirect, url_for, request, render_template
 from werkzeug.utils import secure_filename
 from gevent.pywsgi import WSGIServer
 
-# Define a flask app
+
 app = Flask(__name__)
 
-# Model saved with Keras model.save()
-MODEL_PATH = 'car_model.h5'
 
+MODEL_PATH = 'car_model.h5'
 # Load your trained model
 model = load_model(MODEL_PATH)
-model._make_predict_function()          # Necessary
-# print('Model loaded. Start serving...')
+model._make_predict_function()
 
-# You can also use pretrained model from Keras
-# Check https://keras.io/applications/
+##For creating model
 #from keras.applications.resnet50 import ResNet50
 #model = ResNet50(weights='imagenet')
-#model.save('')
-print('Model loaded. Check http://127.0.0.1:5000/')
-
-
+#model.save('model_resnet.h5')
 
 def model_predict(img_path, model):
     img = image.load_img(img_path, target_size=(224, 224))
-
     # Preprocessing the image
     x = image.img_to_array(img)
-    # x = np.true_divide(x, 255)
     x = np.expand_dims(x, axis=0)
-
     x = preprocess_input(x, mode='caffe')
-
     preds = model.predict(x)
     return preds
 
 
-@app.route('/', methods=['GET'])
+@app.route('/Image_Classification', methods=['GET'])
 def index():
     # Main page
     return render_template('index.html')
-
 
 @app.route('/predict', methods=['GET', 'POST'])
 def upload():
@@ -62,7 +51,6 @@ def upload():
         # Get the file from post request
         f = request.files['file']
 
-        # Save the file to ./uploads
         basepath = os.path.dirname(__file__)
         file_path = os.path.join(
             basepath, 'uploads', secure_filename(f.filename))
@@ -72,13 +60,11 @@ def upload():
         preds = model_predict(file_path, model)
 
         # Process your result for human
-        # pred_class = preds.argmax(axis=-1)            # Simple argmax
-        pred_class = decode_predictions(preds, top=1)   # ImageNet Decode
-        result = str(pred_class[0][0][1])               # Convert to string
+        # pred_class = preds.argmax(axis=-1)
+        pred_class = decode_predictions(preds, top=1)
+        result = str(pred_class[0][0][1])
         return result
     return None
 
-
 if __name__ == '__main__':
-
-    app.run()
+      app.run(debug=True)
